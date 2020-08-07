@@ -1,0 +1,39 @@
+user  nginx;
+worker_processes  1;
+
+pid        /var/run/nginx.pid;
+
+events {
+  worker_connections  1024;
+  multi_accept        on;
+}
+
+http {
+  include	/etc/nginx/mime.types;
+  
+  charset 			      utf-8;
+  default_type 		    application/octet-stream;    
+  sendfile 			      on;
+  keepalive_timeout	  240;
+  proxy_send_timeout	240;
+  proxy_read_timeout  240;
+
+  # omit nginx version on response header
+  server_tokens       off;
+    
+  add_header X-Content-Type-Options "nosniff" always;
+  add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" always;
+
+  server {
+    listen 4002;
+    server_name ${HOST_FRONT};
+    
+    root   /usr/share/nginx/html/;
+    index  index.html;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+  }
+
+}
